@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.NewsAppTech" parent="Theme.MaterialComponents.Light.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.NewsAppTech.Base" parent="Theme.MaterialComponents.Light.NoActionBar"/>
+
+    <style name="Theme.NewsAppTech" parent="Theme.NewsAppTech.Base" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/purple_500</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimationDuration">1000</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
+
+        <item name="windowSplashScreenBackground">@color/purple_500</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/white</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.NewsAppTech.Base</item>
+    </style>
+
 </resources>

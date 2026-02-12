@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.activity.ktx)
     implementation(libs.fragment.ktx)
+    implementation(libs.androidx.core.splashscreen)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
