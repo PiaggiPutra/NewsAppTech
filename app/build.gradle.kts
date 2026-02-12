@@ -97,6 +97,9 @@ dependencies {
     // SwipeRefreshLayout
     implementation(libs.swiperefreshlayout)
 
+    // Shimmer
+    implementation(libs.shimmer)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

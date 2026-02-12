@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.piaggi.newsapptech.domain.entity.Article
 import com.piaggi.newsapptech.domain.usecase.GetTopHeadlinesUseCase
+import com.piaggi.newsapptech.ui.model.NewsListItem
 import com.piaggi.newsapptech.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +69,7 @@ class HomeViewModel @Inject constructor(
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
-                            articles = allArticles.toList(),
+                            newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = null,
                             isRefreshing = false,
                             isOffline = false
@@ -79,6 +80,7 @@ class HomeViewModel @Inject constructor(
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
+                            newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = result.message,
                             isRefreshing = false,
                             hasError = true
@@ -93,11 +95,26 @@ class HomeViewModel @Inject constructor(
     fun loadMore() {
         if (isLoading || loadedPages.contains(currentPage + 1)) return
         currentPage++
-        _state.value = _state.value.copy(isLoadingMore = true)
+        _state.value = _state.value.copy(
+            isLoadingMore = true,
+            newsListItems = buildNewsListItems(allArticles.toList(), true)
+        )
         loadNews()
     }
 
     fun refresh() {
         loadNews(refresh = true)
+    }
+
+    private fun buildNewsListItems(
+        articles: List<Article>,
+        isLoadingMore: Boolean
+    ): List<NewsListItem> {
+        return articles.map { NewsListItem.ArticleItem(it) } +
+                if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem } else emptyList()
+    }
+
+    companion object {
+        private const val SKELETON_COUNT = 3
     }
 }

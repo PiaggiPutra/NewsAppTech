@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
@@ -61,7 +62,18 @@ class NewsRepositoryImpl @Inject constructor(
                 }
                 emit(Resource.Success(articlesWithBookmarkStatus))
             } else {
-                emit(Resource.Error(e.message ?: "An unexpected error occurred"))
+                val errorMessage = try {
+                    val errorBody = e.response()?.errorBody()?.string()
+                    if (errorBody != null) {
+                        val jsonObject = JSONObject(errorBody)
+                        jsonObject.optString("message", "An unexpected error occurred")
+                    } else {
+                        "An unexpected error occurred"
+                    }
+                } catch (ex: Exception) {
+                    "An unexpected error occurred"
+                }
+                emit(Resource.Error(errorMessage))
             }
         } catch (e: IOException) {
             val cachedHeadlinesList = cachedHeadlineDao.getCachedHeadlinesByPage(page).first()
