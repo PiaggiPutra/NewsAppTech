@@ -2,10 +2,13 @@
     <string name="app_name">NewsAppTech</string>
     <string name="home">Home</string>
     <string name="search">Search</string>
+    <string name="search_page">Search Page</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="top_headlines">Top Headlines</string>
     <string name="no_bookmarks">No bookmarked articles</string>
     <string name="search_news">Search News</string>
-    <string name="search_page">Search Page</string>
     <string name="no_results_found">No results found</string>
+    <string name="read_full_article">Read Full Article</string>
+    <string name="article_detail">Article Detail</string>
+    <string name="share">Share</string>
 </resources>

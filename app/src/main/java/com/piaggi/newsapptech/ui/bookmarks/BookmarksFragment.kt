@@ -9,8 +9,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.piaggi.newsapptech.R
 import com.piaggi.newsapptech.databinding.FragmentBookmarksBinding
+import com.piaggi.newsapptech.util.NavArgs
 import com.piaggi.newsapptech.ui.adapter.BookmarkAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -43,6 +46,7 @@ class BookmarksFragment : Fragment() {
     private fun setupRecyclerView() {
         bookmarkAdapter = BookmarkAdapter(
             onArticleClick = { article ->
+                NavArgs.navigateToArticleDetail(findNavController(), article, R.id.articleDetailFragment)
             },
             onBookmarkClick = { article ->
                 viewModel.toggleBookmark(article)

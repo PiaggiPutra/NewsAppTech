@@ -12,10 +12,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.piaggi.newsapptech.R
 import com.piaggi.newsapptech.databinding.FragmentSearchBinding
+import com.piaggi.newsapptech.util.NavArgs
 import com.piaggi.newsapptech.ui.adapter.NewsAdapter
 import com.piaggi.newsapptech.ui.model.NewsListItem
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,7 +51,7 @@ class SearchFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = NewsAdapter(
             onArticleClick = { article ->
-                // TODO: Navigate to article detail
+                NavArgs.navigateToArticleDetail(findNavController(), article, R.id.articleDetailFragment)
             },
             onBookmarkClick = { article ->
                 viewModel.toggleBookmark(article)

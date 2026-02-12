@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
@@ -19,4 +20,13 @@
         android:name="com.piaggi.newsapptech.ui.bookmarks.BookmarksFragment"
         android:label="Bookmarks"/>
 
+    <fragment
+        android:id="@+id/articleDetailFragment"
+        android:name="com.piaggi.newsapptech.ui.articledetail.ArticleDetailFragment"
+        android:label="Article Detail">
+        <argument
+            android:name="article"
+            android:defaultValue="@null"
+            app:argType="com.piaggi.newsapptech.domain.entity.Article"/>
+    </fragment>
 </navigation>

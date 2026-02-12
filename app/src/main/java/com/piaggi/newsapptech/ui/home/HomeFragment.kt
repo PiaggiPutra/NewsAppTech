@@ -10,10 +10,13 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.piaggi.newsapptech.R
 import com.piaggi.newsapptech.databinding.FragmentHomeBinding
 import com.piaggi.newsapptech.ui.adapter.NewsAdapter
+import com.piaggi.newsapptech.util.NavArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -45,6 +48,7 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         newsAdapter = NewsAdapter(
             onArticleClick = { article ->
+                NavArgs.navigateToArticleDetail(findNavController(), article, R.id.articleDetailFragment)
             },
             onBookmarkClick = { article ->
                 viewModel.toggleBookmark(article)
