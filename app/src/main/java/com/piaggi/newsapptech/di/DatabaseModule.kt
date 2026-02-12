@@ -3,7 +3,8 @@ package com.piaggi.newsapptech.di
 import android.content.Context
 import androidx.room.Room
 import com.piaggi.newsapptech.data.local.AppDatabase
-import com.piaggi.newsapptech.data.local.ArticleDao
+import com.piaggi.newsapptech.data.local.dao.ArticleDao
+import com.piaggi.newsapptech.data.local.dao.CachedHeadlineDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,5 +31,11 @@ object DatabaseModule {
     @Singleton
     fun provideArticleDao(database: AppDatabase): ArticleDao {
         return database.articleDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCachedHeadlineDao(database: AppDatabase): CachedHeadlineDao {
+        return database.cachedHeadlineDao()
     }
 }

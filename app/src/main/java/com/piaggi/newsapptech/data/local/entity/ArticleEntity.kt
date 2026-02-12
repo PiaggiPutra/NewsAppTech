@@ -1,4 +1,4 @@
-package com.piaggi.newsapptech.data.local
+package com.piaggi.newsapptech.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

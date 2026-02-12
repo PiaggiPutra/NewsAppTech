@@ -1,10 +1,11 @@
-package com.piaggi.newsapptech.data.local
+package com.piaggi.newsapptech.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.piaggi.newsapptech.data.local.entity.ArticleEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -12,7 +13,7 @@ interface ArticleDao {
     @Query("SELECT * FROM articles ORDER BY publishedAt DESC")
     fun getAllBookmarkedArticles(): Flow<List<ArticleEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertArticle(article: ArticleEntity)
 
     @Delete
