@@ -10,7 +10,6 @@ import com.piaggi.newsapptech.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +24,7 @@ class HomeViewModel @Inject constructor(
 
     private var currentPage = 1
     private var isLoading = false
-    private var allArticles = mutableListOf<Article>()
+    private val allArticles = mutableListOf<Article>()
     private val loadedPages = mutableSetOf<Int>()
 
     init {
@@ -39,27 +38,27 @@ class HomeViewModel @Inject constructor(
             currentPage = 1
             allArticles.clear()
             loadedPages.clear()
-            _state.value = _state.value.copy(isRefreshing = true)
-        } else {
-            _state.value = _state.value.copy(isLoading = true)
         }
+
+        _state.value = _state.value.copy(
+            isLoading = !refresh,
+            isRefreshing = refresh,
+            error = null,
+            hasError = false
+        )
         isLoading = true
 
         viewModelScope.launch {
-            getTopHeadlinesUseCase(currentPage, refresh).collectLatest { result ->
+            getTopHeadlinesUseCase(currentPage, refresh).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        if (refresh) {
-                            _state.value = _state.value.copy(isRefreshing = true)
-                        }
                     }
+
                     is Resource.Success -> {
                         val newArticles = result.data ?: emptyList()
-                        if (refresh) {
-                            allArticles.clear()
-                            loadedPages.clear()
-                        }
+
                         loadedPages.add(currentPage)
+
                         newArticles.forEach { article ->
                             val existingIndex = allArticles.indexOfFirst { it.id == article.id }
                             if (existingIndex == -1) {
@@ -68,23 +67,26 @@ class HomeViewModel @Inject constructor(
                                 allArticles[existingIndex] = article
                             }
                         }
+
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
+                            isRefreshing = false,
                             newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = null,
-                            isRefreshing = false,
+                            hasError = false,
                             isOffline = false
                         )
                         isLoading = false
                     }
+
                     is Resource.Error -> {
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
+                            isRefreshing = false,
                             newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = result.message,
-                            isRefreshing = false,
                             hasError = true
                         )
                         isLoading = false
@@ -96,6 +98,7 @@ class HomeViewModel @Inject constructor(
 
     fun loadMore() {
         if (isLoading || loadedPages.contains(currentPage + 1)) return
+
         currentPage++
         _state.value = _state.value.copy(
             isLoadingMore = true,
@@ -113,7 +116,8 @@ class HomeViewModel @Inject constructor(
         isLoadingMore: Boolean
     ): List<NewsListItem> {
         return articles.map { NewsListItem.ArticleItem(it) } +
-                if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem } else emptyList()
+                if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem }
+                else emptyList()
     }
 
     fun toggleBookmark(article: Article) {
@@ -134,6 +138,10 @@ class HomeViewModel @Inject constructor(
                 bookmarksUseCase.bookmarkArticle(article)
             }
         }
+    }
+
+    fun clearError() {
+        _state.value = _state.value.copy(error = null, hasError = false)
     }
 
     companion object {

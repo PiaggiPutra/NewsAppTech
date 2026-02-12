@@ -9,13 +9,13 @@ interface NewsApi {
         @Query("country") country: String = "us",
         @Query("category") category: String = "technology",
         @Query("page") page: Int = 1,
-        @Query("pageSize") pageSize: Int = 5
+        @Query("pageSize") pageSize: Int = 6
     ): NewsResponse
 
     @GET("everything")
     suspend fun searchNews(
         @Query("q") query: String,
         @Query("page") page: Int = 1,
-        @Query("pageSize") pageSize: Int = 5
+        @Query("pageSize") pageSize: Int = 6
     ): NewsResponse
 }

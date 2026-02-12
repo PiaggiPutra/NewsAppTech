@@ -64,6 +64,25 @@ fun CachedHeadlineEntity.toDomain(): Article {
     )
 }
 
+fun Article.toCachedEntity(page: Int): CachedHeadlineEntity {
+    return CachedHeadlineEntity(
+        id = id,
+        title = title,
+        description = description,
+        url = url,
+        urlToImage = urlToImage,
+        source = source,
+        author = author,
+        publishedAt = publishedAt,
+        content = content,
+        page = page
+    )
+}
+
+fun List<Article>.toCachedEntities(page: Int): List<CachedHeadlineEntity> {
+    return map { it.toCachedEntity(page) }
+}
+
 fun List<ArticleDto>.toDomainList(): List<Article> = map { it.toDomain() }
 fun List<ArticleEntity>.toDomainListFromEntity(): List<Article> = map { it.toDomain() }
 fun List<CachedHeadlineEntity>.toDomainListFromCached(): List<Article> = map { it.toDomain() }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,25 +24,28 @@ class SearchViewModel @Inject constructor(
     private val bookmarkUseCase: BookmarkUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SearchState())
+    private val _state = MutableStateFlow(SearchUIState())
     val state = _state.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     private var currentPage = 1
-    private var allArticles = mutableListOf<Article>()
+    private val allArticles = mutableListOf<Article>()
     private val loadedPages = mutableSetOf<Int>()
     private var currentQuery = ""
     private var isSearching = false
 
     init {
         viewModelScope.launch {
-            _searchQuery.debounce(500).collectLatest { query ->
-                if (query.isNotEmpty()) {
-                    searchNews(query, true)
-                } else {
-                    clearResults()
+            _searchQuery
+                .debounce(500)
+                .distinctUntilChanged()
+                .collectLatest { query ->
+                    if (query.isNotEmpty()) {
+                        searchNews(query, isNewSearch = true)
+                    } else {
+                        clearResults()
+                    }
                 }
-            }
         }
     }
 
@@ -55,11 +59,19 @@ class SearchViewModel @Inject constructor(
         currentQuery = ""
         allArticles.clear()
         loadedPages.clear()
-        _state.value = SearchState(query = _state.value.query)
+        isSearching = false
+        _state.value = _state.value.copy(
+            query = "",
+            newsListItems = emptyList(),
+            isLoading = false,
+            isLoadingMore = false,
+            error = null,
+            hasError = false
+        )
     }
 
     private fun searchNews(query: String, isNewSearch: Boolean = false) {
-        if (isSearching) return
+        if (isSearching && !isNewSearch) return
 
         if (isNewSearch || query != currentQuery) {
             currentPage = 1
@@ -69,16 +81,24 @@ class SearchViewModel @Inject constructor(
         }
 
         isSearching = true
-        _state.value = _state.value.copy(isLoading = isNewSearch, isLoadingMore = !isNewSearch, error = null, hasError = false)
+        _state.value = _state.value.copy(
+            isLoading = isNewSearch,
+            isLoadingMore = !isNewSearch,
+            error = null,
+            hasError = false,
+            newsListItems = if (isNewSearch) emptyList()
+            else buildNewsListItems(allArticles.toList(), true)
+        )
 
         viewModelScope.launch {
-            searchUseCase(query, currentPage).collectLatest { result ->
+            searchUseCase(query, currentPage).collect { result ->
                 when (result) {
-                    is Resource.Loading -> {
-                    }
+                    is Resource.Loading -> {}
+
                     is Resource.Success -> {
                         val newArticles = result.data ?: emptyList()
                         loadedPages.add(currentPage)
+
                         newArticles.forEach { article ->
                             val existingIndex = allArticles.indexOfFirst { it.id == article.id }
                             if (existingIndex == -1) {
@@ -87,18 +107,22 @@ class SearchViewModel @Inject constructor(
                                 allArticles[existingIndex] = article
                             }
                         }
+
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
                             newsListItems = buildNewsListItems(allArticles.toList(), false),
-                            error = null
+                            error = null,
+                            hasError = false
                         )
                         isSearching = false
                     }
+
                     is Resource.Error -> {
                         _state.value = _state.value.copy(
                             isLoading = false,
                             isLoadingMore = false,
+                            newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = result.message,
                             hasError = true
                         )
@@ -111,8 +135,9 @@ class SearchViewModel @Inject constructor(
 
     fun loadMore() {
         if (isSearching || loadedPages.contains(currentPage + 1) || currentQuery.isEmpty()) return
+
         currentPage++
-        searchNews(currentQuery, false)
+        searchNews(currentQuery, isNewSearch = false)
     }
 
     private fun buildNewsListItems(
@@ -120,7 +145,8 @@ class SearchViewModel @Inject constructor(
         isLoadingMore: Boolean
     ): List<NewsListItem> {
         return articles.map { NewsListItem.ArticleItem(it) } +
-                if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem } else emptyList()
+                if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem }
+                else emptyList()
     }
 
     fun toggleBookmark(article: Article) {
@@ -141,6 +167,10 @@ class SearchViewModel @Inject constructor(
                 bookmarkUseCase.bookmarkArticle(article)
             }
         }
+    }
+
+    fun clearError() {
+        _state.value = _state.value.copy(error = null, hasError = false)
     }
 
     companion object {

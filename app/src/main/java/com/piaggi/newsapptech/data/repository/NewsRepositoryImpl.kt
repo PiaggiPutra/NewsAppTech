@@ -2,7 +2,7 @@ package com.piaggi.newsapptech.data.repository
 
 import com.piaggi.newsapptech.data.local.dao.ArticleDao
 import com.piaggi.newsapptech.data.local.dao.CachedHeadlineDao
-import com.piaggi.newsapptech.data.local.entity.CachedHeadlineEntity
+import com.piaggi.newsapptech.data.local.mapper.toCachedEntities
 import com.piaggi.newsapptech.data.local.mapper.toDomainList
 import com.piaggi.newsapptech.data.local.mapper.toDomainListFromCached
 import com.piaggi.newsapptech.data.local.mapper.toDomainListFromEntity
@@ -12,6 +12,7 @@ import com.piaggi.newsapptech.domain.entity.Article
 import com.piaggi.newsapptech.domain.repository.NewsRepository
 import com.piaggi.newsapptech.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -26,79 +27,42 @@ class NewsRepositoryImpl @Inject constructor(
     private val cachedHeadlineDao: CachedHeadlineDao
 ) : NewsRepository {
 
-    override fun getTopHeadlines(page: Int, forceRefresh: Boolean): Flow<Resource<List<Article>>> = flow {
+    override fun getTopHeadlines(
+        page: Int,
+        forceRefresh: Boolean
+    ): Flow<Resource<List<Article>>> = flow {
         emit(Resource.Loading())
+
+        if (!forceRefresh) {
+            val cachedData = cachedHeadlineDao.getCachedHeadlinesByPage(page).first()
+            if (cachedData.isNotEmpty()) {
+                val articlesWithBookmark = cachedData
+                    .toDomainListFromCached()
+                    .withBookmarkStatus()
+                emit(Resource.Success(articlesWithBookmark))
+            }
+        }
+
         try {
             val response = api.getTopHeadlines(page = page)
-            val articles = response.articles.toDomainList()
+            val articles = response.articles
+                .toDomainList()
+                .withBookmarkStatus()
 
-            val articlesWithBookmarkStatus = articles.map { article ->
-                val isBookmarked = dao.isArticleBookmarked(article.id)
-                article.copy(isBookmarked = isBookmarked)
-            }
+            cachedHeadlineDao.insertHeadlines(articles.toCachedEntities(page))
 
-            val cachedEntities = articlesWithBookmarkStatus.map { article ->
-                CachedHeadlineEntity(
-                    id = article.id,
-                    title = article.title,
-                    description = article.description,
-                    url = article.url,
-                    urlToImage = article.urlToImage,
-                    source = article.source,
-                    author = article.author,
-                    publishedAt = article.publishedAt,
-                    content = article.content,
-                    page = page
-                )
-            }
-            cachedHeadlineDao.insertHeadlines(cachedEntities)
+            emit(Resource.Success(articles))
 
-            emit(Resource.Success(articlesWithBookmarkStatus))
         } catch (e: HttpException) {
-            val cachedHeadlinesList = cachedHeadlineDao.getCachedHeadlinesByPage(page).first()
-            if (cachedHeadlinesList.isNotEmpty()) {
-                val articles = cachedHeadlinesList.toDomainListFromCached()
-                val articlesWithBookmarkStatus = articles.map { article ->
-                    val isBookmarked = dao.isArticleBookmarked(article.id)
-                    article.copy(isBookmarked = isBookmarked)
-                }
-                emit(Resource.Success(articlesWithBookmarkStatus))
-            } else {
-                val errorMessage = try {
-                    val errorBody = e.response()?.errorBody()?.string()
-                    if (errorBody != null) {
-                        val jsonObject = JSONObject(errorBody)
-                        jsonObject.optString("message", "An unexpected error occurred")
-                    } else {
-                        "An unexpected error occurred"
-                    }
-                } catch (ex: Exception) {
-                    "An unexpected error occurred"
-                }
-                emit(Resource.Error(errorMessage))
-            }
+            handleNetworkError(page, e.response()?.errorBody()?.string())
         } catch (e: IOException) {
-            val cachedHeadlinesList = cachedHeadlineDao.getCachedHeadlinesByPage(page).first()
-            if (cachedHeadlinesList.isNotEmpty()) {
-                val articles = cachedHeadlinesList.toDomainListFromCached()
-                val articlesWithBookmarkStatus = articles.map { article ->
-                    val isBookmarked = dao.isArticleBookmarked(article.id)
-                    article.copy(isBookmarked = isBookmarked)
-                }
-                emit(Resource.Success(articlesWithBookmarkStatus))
-            } else {
-                emit(Resource.Error("Couldn't reach server. Check your internet connection."))
-            }
+            handleNetworkError(page, null)
         }
     }
 
     override fun getCachedHeadlines(): Flow<List<Article>> {
         return cachedHeadlineDao.getAllCachedHeadlines().map { entities ->
-            val articles = entities.toDomainListFromCached()
-            articles.map { article ->
-                val isBookmarked = dao.isArticleBookmarked(article.id)
-                article.copy(isBookmarked = isBookmarked)
-            }
+            entities.toDomainListFromCached().withBookmarkStatus()
         }
     }
 
@@ -129,20 +93,42 @@ class NewsRepositoryImpl @Inject constructor(
 
             emit(Resource.Success(articlesWithBookmarkStatus))
         } catch (e: HttpException) {
-            val errorMessage = try {
-                val errorBody = e.response()?.errorBody()?.string()
-                if (errorBody != null) {
-                    val jsonObject = JSONObject(errorBody)
-                    jsonObject.optString("message", "An unexpected error occurred")
-                } else {
-                    "An unexpected error occurred"
-                }
+            handleNetworkError(page, e.response()?.errorBody()?.string())
+        } catch (e: IOException) {
+            handleNetworkError(page, null)
+        }
+    }
+
+    private suspend fun List<Article>.withBookmarkStatus(): List<Article> {
+        return map { article ->
+            article.copy(isBookmarked = dao.isArticleBookmarked(article.id))
+        }
+    }
+
+    private suspend fun FlowCollector<Resource<List<Article>>>.handleNetworkError(
+        page: Int,
+        errorBody: String?
+    ) {
+        val cachedData = cachedHeadlineDao.getCachedHeadlinesByPage(page).first()
+
+        if (cachedData.isNotEmpty()) {
+            val articles = cachedData.toDomainListFromCached().withBookmarkStatus()
+            emit(Resource.Success(articles))
+        } else {
+            val errorMessage = parseErrorMessage(errorBody)
+                ?: "Couldn't reach server. Check your internet connection."
+            emit(Resource.Error(errorMessage))
+        }
+    }
+
+    private fun parseErrorMessage(errorBody: String?): String? {
+        return errorBody?.let {
+            try {
+                val jsonObject = JSONObject(it)
+                jsonObject.optString("message", "An unexpected error occurred")
             } catch (ex: Exception) {
                 "An unexpected error occurred"
             }
-            emit(Resource.Error(errorMessage))
-        } catch (e: IOException) {
-            emit(Resource.Error("Couldn't reach server. Check your internet connection."))
         }
     }
 }
