@@ -11,4 +11,11 @@ interface NewsApi {
         @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 5
     ): NewsResponse
+
+    @GET("everything")
+    suspend fun searchNews(
+        @Query("q") query: String,
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 5
+    ): NewsResponse
 }

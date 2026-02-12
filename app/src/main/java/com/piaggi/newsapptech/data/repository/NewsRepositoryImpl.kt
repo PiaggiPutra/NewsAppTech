@@ -115,4 +115,34 @@ class NewsRepositoryImpl @Inject constructor(
     override suspend fun removeBookmark(articleId: String) {
         dao.deleteById(articleId)
     }
+
+    override fun searchNews(query: String, page: Int): Flow<Resource<List<Article>>> = flow {
+        emit(Resource.Loading())
+        try {
+            val response = api.searchNews(query, page = page)
+            val articles = response.articles.toDomainList()
+
+            val articlesWithBookmarkStatus = articles.map { article ->
+                val isBookmarked = dao.isArticleBookmarked(article.id)
+                article.copy(isBookmarked = isBookmarked)
+            }
+
+            emit(Resource.Success(articlesWithBookmarkStatus))
+        } catch (e: HttpException) {
+            val errorMessage = try {
+                val errorBody = e.response()?.errorBody()?.string()
+                if (errorBody != null) {
+                    val jsonObject = JSONObject(errorBody)
+                    jsonObject.optString("message", "An unexpected error occurred")
+                } else {
+                    "An unexpected error occurred"
+                }
+            } catch (ex: Exception) {
+                "An unexpected error occurred"
+            }
+            emit(Resource.Error(errorMessage))
+        } catch (e: IOException) {
+            emit(Resource.Error("Couldn't reach server. Check your internet connection."))
+        }
+    }
 }

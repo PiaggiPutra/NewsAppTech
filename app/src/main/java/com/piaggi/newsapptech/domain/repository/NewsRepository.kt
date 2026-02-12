@@ -12,4 +12,5 @@ interface NewsRepository {
     fun getBookmarkedArticles(): Flow<List<Article>>
     suspend fun bookmarkArticle(article: Article)
     suspend fun removeBookmark(articleId: String)
+    fun searchNews(query: String, page: Int): Flow<Resource<List<Article>>>
 }

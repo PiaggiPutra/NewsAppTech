@@ -12,7 +12,7 @@ import com.piaggi.newsapptech.databinding.ItemArticleSkeletonBinding
 import com.piaggi.newsapptech.domain.entity.Article
 import com.piaggi.newsapptech.ui.model.NewsListItem
 
-class HeadlineAdapter(
+class NewsAdapter(
     private val onArticleClick: (Article) -> Unit,
     private val onBookmarkClick: (Article) -> Unit
 ) : ListAdapter<NewsListItem, RecyclerView.ViewHolder>(NewsListItemDiffCallback()) {

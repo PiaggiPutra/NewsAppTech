@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.piaggi.newsapptech.databinding.FragmentHomeBinding
-import com.piaggi.newsapptech.ui.adapter.HeadlineAdapter
+import com.piaggi.newsapptech.ui.adapter.NewsAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -22,7 +22,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: HomeViewModel by viewModels()
-    private lateinit var newsAdapter: HeadlineAdapter
+    private lateinit var newsAdapter: NewsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +41,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        newsAdapter = HeadlineAdapter(
+        newsAdapter = NewsAdapter(
             onArticleClick = { article ->
             },
             onBookmarkClick = { article ->
