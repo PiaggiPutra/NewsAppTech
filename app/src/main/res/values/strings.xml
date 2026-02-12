@@ -4,4 +4,5 @@
     <string name="search">Search</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="top_headlines">Top Headlines</string>
+    <string name="no_bookmarks">No bookmarked articles</string>
 </resources>

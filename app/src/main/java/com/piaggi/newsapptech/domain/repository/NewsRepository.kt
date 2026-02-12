@@ -8,4 +8,8 @@ import kotlinx.coroutines.flow.Flow
 interface NewsRepository {
     fun getTopHeadlines(page: Int, forceRefresh: Boolean): Flow<Resource<List<Article>>>
     fun getCachedHeadlines(): Flow<List<Article>>
+
+    fun getBookmarkedArticles(): Flow<List<Article>>
+    suspend fun bookmarkArticle(article: Article)
+    suspend fun removeBookmark(articleId: String)
 }

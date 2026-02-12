@@ -3,6 +3,7 @@ package com.piaggi.newsapptech.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.piaggi.newsapptech.domain.entity.Article
+import com.piaggi.newsapptech.domain.usecase.BookmarkUseCase
 import com.piaggi.newsapptech.domain.usecase.GetTopHeadlinesUseCase
 import com.piaggi.newsapptech.ui.model.NewsListItem
 import com.piaggi.newsapptech.util.Resource
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getTopHeadlinesUseCase: GetTopHeadlinesUseCase,
+    private val bookmarksUseCase: BookmarkUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUIState())
@@ -112,6 +114,26 @@ class HomeViewModel @Inject constructor(
     ): List<NewsListItem> {
         return articles.map { NewsListItem.ArticleItem(it) } +
                 if (isLoadingMore) List(SKELETON_COUNT) { NewsListItem.SkeletonItem } else emptyList()
+    }
+
+    fun toggleBookmark(article: Article) {
+        viewModelScope.launch {
+            val index = allArticles.indexOfFirst { it.id == article.id }
+            if (index != -1) {
+                val updatedArticle = article.copy(isBookmarked = !article.isBookmarked)
+                allArticles[index] = updatedArticle
+
+                _state.value = _state.value.copy(
+                    newsListItems = buildNewsListItems(allArticles.toList(), _state.value.isLoadingMore)
+                )
+            }
+
+            if (article.isBookmarked) {
+                bookmarksUseCase.removeBookmark(article.id)
+            } else {
+                bookmarksUseCase.bookmarkArticle(article)
+            }
+        }
     }
 
     companion object {

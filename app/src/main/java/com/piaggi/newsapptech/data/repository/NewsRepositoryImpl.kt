@@ -5,6 +5,8 @@ import com.piaggi.newsapptech.data.local.dao.CachedHeadlineDao
 import com.piaggi.newsapptech.data.local.entity.CachedHeadlineEntity
 import com.piaggi.newsapptech.data.local.mapper.toDomainList
 import com.piaggi.newsapptech.data.local.mapper.toDomainListFromCached
+import com.piaggi.newsapptech.data.local.mapper.toDomainListFromEntity
+import com.piaggi.newsapptech.data.local.mapper.toEntity
 import com.piaggi.newsapptech.data.remote.NewsApi
 import com.piaggi.newsapptech.domain.entity.Article
 import com.piaggi.newsapptech.domain.repository.NewsRepository
@@ -98,5 +100,19 @@ class NewsRepositoryImpl @Inject constructor(
                 article.copy(isBookmarked = isBookmarked)
             }
         }
+    }
+
+    override fun getBookmarkedArticles(): Flow<List<Article>> {
+        return dao.getAllBookmarkedArticles().map { entities ->
+            entities.toDomainListFromEntity()
+        }
+    }
+
+    override suspend fun bookmarkArticle(article: Article) {
+        dao.insertArticle(article.toEntity())
+    }
+
+    override suspend fun removeBookmark(articleId: String) {
+        dao.deleteById(articleId)
     }
 }
