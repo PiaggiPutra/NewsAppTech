@@ -66,7 +66,8 @@ class SearchViewModel @Inject constructor(
             isLoading = false,
             isLoadingMore = false,
             error = null,
-            hasError = false
+            hasError = false,
+            hasReachedEnd = false
         )
     }
 
@@ -86,6 +87,7 @@ class SearchViewModel @Inject constructor(
             isLoadingMore = !isNewSearch,
             error = null,
             hasError = false,
+            hasReachedEnd = false,
             newsListItems = if (isNewSearch) emptyList()
             else buildNewsListItems(allArticles.toList(), true)
         )
@@ -101,12 +103,15 @@ class SearchViewModel @Inject constructor(
                         val newArticles = result.data ?: emptyList()
                         loadedPages.add(currentPage)
 
-                        newArticles.forEach { article ->
-                            val existingIndex = allArticles.indexOfFirst { it.id == article.id }
-                            if (existingIndex == -1) {
-                                allArticles.add(article)
-                            } else {
-                                allArticles[existingIndex] = article
+                        val hasReachedEnd = newArticles.isEmpty()
+                        if (!hasReachedEnd) {
+                            newArticles.forEach { article ->
+                                val existingIndex = allArticles.indexOfFirst { it.id == article.id }
+                                if (existingIndex == -1) {
+                                    allArticles.add(article)
+                                } else {
+                                    allArticles[existingIndex] = article
+                                }
                             }
                         }
 
@@ -115,7 +120,8 @@ class SearchViewModel @Inject constructor(
                             isLoadingMore = false,
                             newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = null,
-                            hasError = false
+                            hasError = false,
+                            hasReachedEnd = hasReachedEnd
                         )
                         isSearching = false
                     }
@@ -136,7 +142,7 @@ class SearchViewModel @Inject constructor(
     }
 
     fun loadMore() {
-        if (isSearching || loadedPages.contains(currentPage + 1) || currentQuery.isEmpty()) return
+        if (isSearching || loadedPages.contains(currentPage + 1) || currentQuery.isEmpty() || _state.value.hasReachedEnd) return
 
         currentPage++
         searchNews(currentQuery, isNewSearch = false)

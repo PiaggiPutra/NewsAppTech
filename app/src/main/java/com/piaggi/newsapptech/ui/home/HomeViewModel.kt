@@ -44,7 +44,8 @@ class HomeViewModel @Inject constructor(
             isLoading = !refresh,
             isRefreshing = refresh,
             error = null,
-            hasError = false
+            hasError = false,
+            hasReachedEnd = false
         )
         isLoading = true
 
@@ -59,12 +60,15 @@ class HomeViewModel @Inject constructor(
 
                         loadedPages.add(currentPage)
 
-                        newArticles.forEach { article ->
-                            val existingIndex = allArticles.indexOfFirst { it.id == article.id }
-                            if (existingIndex == -1) {
-                                allArticles.add(article)
-                            } else {
-                                allArticles[existingIndex] = article
+                        val hasReachedEnd = newArticles.isEmpty()
+                        if (!hasReachedEnd) {
+                            newArticles.forEach { article ->
+                                val existingIndex = allArticles.indexOfFirst { it.id == article.id }
+                                if (existingIndex == -1) {
+                                    allArticles.add(article)
+                                } else {
+                                    allArticles[existingIndex] = article
+                                }
                             }
                         }
 
@@ -75,7 +79,8 @@ class HomeViewModel @Inject constructor(
                             newsListItems = buildNewsListItems(allArticles.toList(), false),
                             error = null,
                             hasError = false,
-                            isOffline = false
+                            isOffline = false,
+                            hasReachedEnd = hasReachedEnd
                         )
                         isLoading = false
                     }
@@ -97,7 +102,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun loadMore() {
-        if (isLoading || loadedPages.contains(currentPage + 1)) return
+        if (isLoading || loadedPages.contains(currentPage + 1) || _state.value.hasReachedEnd) return
 
         currentPage++
         _state.value = _state.value.copy(

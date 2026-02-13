@@ -10,5 +10,6 @@ data class HomeUIState(
     val newsListItems: List<NewsListItem> = emptyList(),
     val error: String? = null,
     val hasError: Boolean = false,
-    val isOffline: Boolean = false
+    val isOffline: Boolean = false,
+    val hasReachedEnd: Boolean = false
 )

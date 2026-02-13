@@ -8,5 +8,6 @@ data class SearchUIState(
     val newsListItems: List<NewsListItem> = emptyList(),
     val error: String? = null,
     val query: String = "",
-    val hasError: Boolean = false
+    val hasError: Boolean = false,
+    val hasReachedEnd: Boolean = false
 )
