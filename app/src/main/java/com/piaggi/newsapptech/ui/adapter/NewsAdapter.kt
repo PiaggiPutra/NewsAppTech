@@ -75,6 +75,8 @@ class NewsAdapter(
 
                 Glide.with(ivArticleImage)
                     .load(article.urlToImage)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
                     .into(ivArticleImage)
 
                 ibBookmark.setImageResource(

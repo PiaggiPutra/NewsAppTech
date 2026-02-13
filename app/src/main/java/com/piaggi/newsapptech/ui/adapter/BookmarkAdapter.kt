@@ -36,10 +36,12 @@ class BookmarkAdapter(
             binding.apply {
                 tvTitle.text = article.title
                 tvSource.text = article.source
-                tvDescription.text = article.description ?: ""
+                tvDescription.text = article.description.orEmpty()
 
                 Glide.with(ivArticleImage)
                     .load(article.urlToImage)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
                     .into(ivArticleImage)
 
                 ibBookmark.setImageResource(
@@ -47,12 +49,10 @@ class BookmarkAdapter(
                     else R.drawable.ic_bookmarks_outline
                 )
 
-                // Root view click listener for article detail
                 root.setOnClickListener {
                     onArticleClick(article)
                 }
 
-                // Separate click listener for bookmark
                 ibBookmark.setOnClickListener {
                     onBookmarkClick(article)
                 }
