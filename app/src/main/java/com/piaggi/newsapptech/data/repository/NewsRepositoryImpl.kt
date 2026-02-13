@@ -93,9 +93,11 @@ class NewsRepositoryImpl @Inject constructor(
 
             emit(Resource.Success(articlesWithBookmarkStatus))
         } catch (e: HttpException) {
-            handleNetworkError(page, e.response()?.errorBody()?.string())
+            val errorMessage = parseErrorMessage(e.response()?.errorBody()?.string())
+                ?: "An error occurred while searching"
+            emit(Resource.Error(errorMessage))
         } catch (e: IOException) {
-            handleNetworkError(page, null)
+            emit(Resource.Error("Couldn't reach server. Check your internet connection."))
         }
     }
 

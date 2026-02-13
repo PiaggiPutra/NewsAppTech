@@ -92,6 +92,8 @@ class SearchViewModel @Inject constructor(
 
         viewModelScope.launch {
             searchUseCase(query, currentPage).collect { result ->
+                if (query != currentQuery) return@collect
+
                 when (result) {
                     is Resource.Loading -> {}
 
