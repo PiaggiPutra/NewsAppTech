@@ -124,6 +124,10 @@ class SearchViewModel @Inject constructor(
                             hasReachedEnd = hasReachedEnd
                         )
                         isSearching = false
+
+                        if (!hasReachedEnd && currentPage == 1 && !isSearching) {
+                            loadMore()
+                        }
                     }
 
                     is Resource.Error -> {
@@ -182,6 +186,6 @@ class SearchViewModel @Inject constructor(
     }
 
     companion object {
-        private const val SKELETON_COUNT = 5
+        private const val SKELETON_COUNT = 3
     }
 }

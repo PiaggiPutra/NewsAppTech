@@ -83,6 +83,10 @@ class HomeViewModel @Inject constructor(
                             hasReachedEnd = hasReachedEnd
                         )
                         isLoading = false
+
+                        if (!hasReachedEnd && currentPage == 1 && !isLoading) {
+                            loadMore()
+                        }
                     }
 
                     is Resource.Error -> {

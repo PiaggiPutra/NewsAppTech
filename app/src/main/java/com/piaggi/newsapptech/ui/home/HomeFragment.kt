@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.piaggi.newsapptech.R
 import com.piaggi.newsapptech.databinding.FragmentHomeBinding
 import com.piaggi.newsapptech.ui.adapter.NewsAdapter
+import com.piaggi.newsapptech.ui.model.NewsListItem
 import com.piaggi.newsapptech.util.NavArgs
 import com.piaggi.newsapptech.util.setupPaginationScrollListener
 import com.piaggi.newsapptech.util.showToast
