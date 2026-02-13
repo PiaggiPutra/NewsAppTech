@@ -4,19 +4,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/article_item_corner_radius"
+    app:cardElevation="@dimen/article_item_elevation">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="@dimen/article_item_padding">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivArticleImage"
-            android:layout_width="120dp"
-            android:layout_height="90dp"
+            android:layout_width="@dimen/article_item_image_width"
+            android:layout_height="@dimen/article_item_image_height"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -25,10 +25,10 @@
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/spacing_medium"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_size_title"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/ibBookmark"
             app:layout_constraintStart_toEndOf="@id/ivArticleImage"
@@ -38,10 +38,10 @@
             android:id="@+id/tvSource"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginTop="@dimen/spacing_extra_small"
             android:textColor="?android:attr/textColorSecondary"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_caption"
             app:layout_constraintEnd_toStartOf="@id/ibBookmark"
             app:layout_constraintStart_toEndOf="@id/ivArticleImage"
             app:layout_constraintTop_toBottomOf="@id/tvTitle"/>
@@ -50,19 +50,19 @@
             android:id="@+id/tvDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginTop="@dimen/spacing_extra_small"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_body"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivArticleImage"
             app:layout_constraintTop_toBottomOf="@id/tvSource"/>
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/ibBookmark"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/article_item_button_size"
+            android:layout_height="@dimen/article_item_button_size"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_bookmarks_outline"
             app:layout_constraintEnd_toEndOf="parent"

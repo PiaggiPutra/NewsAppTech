@@ -12,12 +12,11 @@ import com.bumptech.glide.Glide
 import com.piaggi.newsapptech.R
 import com.piaggi.newsapptech.databinding.FragmentArticleDetailBinding
 import com.piaggi.newsapptech.domain.entity.Article
+import com.piaggi.newsapptech.util.DateUtils
 import com.piaggi.newsapptech.util.NavArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
-
+import java.util.Date
 
 @AndroidEntryPoint
 class ArticleDetailFragment : Fragment() {
@@ -92,7 +91,7 @@ class ArticleDetailFragment : Fragment() {
             tvTitle.text = article.title
             tvSource.text = article.source
             tvContent.text = article.content ?: article.description.orEmpty()
-            tvPublishedAt.text = formatDate(article.publishedAt)
+            tvPublishedAt.text = DateUtils.formatRelativeTime(parseDate(article.publishedAt))
 
             Glide.with(ivArticleImage)
                 .load(article.urlToImage)
@@ -113,22 +112,12 @@ class ArticleDetailFragment : Fragment() {
         }
     }
 
-    private fun formatDate(dateString: String): String {
+    private fun parseDate(dateString: String?): Date? {
         return try {
-            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-            val date = isoFormat.parse(dateString)
-            val now = System.currentTimeMillis()
-            val diff = now - date.time
-            val hours = diff / (1000 * 60 * 60)
-
-            when {
-                hours < 1 -> "Just now"
-                hours < 24 -> "$hours hours ago"
-                hours < 48 -> "Yesterday"
-                else -> java.text.DateFormat.getDateInstance().format(date)
-            }
+            val isoFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+            isoFormat.parse(dateString)
         } catch (e: Exception) {
-            ""
+            null
         }
     }
 

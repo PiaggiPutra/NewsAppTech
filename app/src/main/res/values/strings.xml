@@ -11,4 +11,14 @@
     <string name="read_full_article">Read Full Article</string>
     <string name="article_detail">Article Detail</string>
     <string name="share">Share</string>
+
+    <!-- Time formatting -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_hours_ago">%d hour(s) ago</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_days_ago">%d days ago</string>
+
+    <!-- Error messages -->
+    <string name="error_network">Couldn\'t reach server. Check your internet connection.</string>
+    <string name="error_search">An error occurred while searching</string>
 </resources>
